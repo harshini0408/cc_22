@@ -1,0 +1,10 @@
+sudo apt update
+sudo apt install -y cron
+sudo systemctl enable --now cron
+crontab -e
+
+18 14 * * * /usr/bin/vmrun -T ws snapshot "/path/to/Windows-VM.vmx" "Daily-Backup"
+
+crontab -l
+which vmrun
+find /usr -name vmrun 2>/dev/null
