@@ -1,0 +1,482 @@
+# **Experiment No. 2 – Virtual Disk and Storage Management**
+
+Platform: Ubuntu host + VMware Workstation + Windows 10 x64 VM
+
+This is the complete practical procedure for all four parts. Follow the steps in order. Commands are provided wherever applicable.
+
+## **Initial setup**
+
+1. Open VMware Workstation.
+2. Select your Windows 10 x64 VM.
+3. Start the VM.
+4. Make sure Windows is working properly.
+
+For Parts C and D, you will need additional virtual hard disks.
+
+# **PART A – Shrink and Extend Virtual Disk**
+
+**Aim:** To shrink and extend the virtual disk using VMware and Windows Disk Management.
+
+### **Step 1: Check the existing disk**
+
+Inside Windows VM, press `Win + R` and execute:
+
+```
+diskmgmt.msc
+```
+
+Check that Disk 0 has approximately 60 GB capacity.
+
+### **Step 2: Shrink C: drive**
+
+1. Right-click C: drive.
+2. Select Shrink Volume.
+3. Enter:
+
+```
+20480
+```
+
+4\. Click Shrink.
+
+20 GB of unallocated space will be created.
+
+### **Step 3: Create a new volume**
+
+1. Right-click Unallocated Space.
+2. Select New Simple Volume.
+3. Allocate the full 20 GB.
+4. Assign drive letter `G:`.
+5. Select:
+
+```
+File System: NTFS
+Volume Label: Student
+Quick Format: Enabled
+```
+
+6\. Click Finish.
+
+You now have a new G: drive of approximately 20 GB.
+
+### **Step 4: Extend the virtual disk**
+
+1. Shut down the Windows VM completely.
+2. Open VMware Workstation.
+3. Select your VM → Edit Virtual Machine Settings.
+4. Select Hard Disk (NVMe).
+5. Click Expand.
+6. Enter:
+
+```
+New disk size: 80 GB
+```
+
+7\. Click Expand.
+
+### **Step 5: Extend the Student volume**
+
+1. Start Windows VM.
+2. Open Disk Management:
+
+```
+diskmgmt.msc
+```
+
+3. Locate the additional 20 GB unallocated space.
+4. Right-click Student (G:).
+5. Select Extend Volume.
+6. Add the available unallocated space.
+7. Click Finish.
+
+
+
+Expected result
+
+&#x20;Student (G:) should now show approximately 40 GB.
+
+
+
+**Important:** The newly added unallocated space must be immediately to the right of G: for Windows Disk Management to extend it. Do not shrink C: again unnecessarily.
+
+# **PART B – Create, Manage, Configure and Schedule Snapshots**
+
+**Aim:** To create and manage VM snapshots and schedule automatic snapshots.
+
+### **Step 1: Open VM Settings**
+
+1. Open VMware Workstation.
+2. Select Windows 10 VM.
+3. Open VM → Settings.
+4. Check Hardware and Options tabs.
+5. Open Snapshot options, if available.
+6. Select Ask me for power-off behaviour, if available.
+
+### **Step 2: Open Snapshot Manager**
+
+From the VMware menu:
+
+```
+VM → Snapshots → Snapshot Manager
+```
+
+Check the current VM state.
+
+### **Step 3: Create a snapshot**
+
+1. Start Windows VM.
+2. In VMware, select:
+
+```
+VM → Snapshots → Take Snapshot
+```
+
+3\. Enter:
+
+```
+Snapshot Name: Before_Changes
+Description: Snapshot before modifying Windows 10 VM
+```
+
+4\. Click Take Snapshot.
+
+### **Step 4: Verify snapshot**
+
+1. Open Snapshot Manager.
+2. Check that `Before_Changes` is displayed.
+
+### **Step 5: Restore snapshot**
+
+1. Create a folder inside Windows named `NewFolder`.
+2. Return to VMware Snapshot Manager.
+3. Select `Before_Changes`.
+4. Click Go To or Revert.
+5. Confirm.
+
+The VM returns to its earlier state, and the folder created afterwards should disappear.
+
+### **Step 6: Schedule automatic snapshots using Ubuntu**
+
+Open Ubuntu Terminal.
+
+**Find vmrun:**
+
+```
+which vmrun
+```
+
+If not found:
+
+```
+find /usr -name vmrun 2>/dev/null
+```
+
+**Find your Windows VM's&#x20;**`.vmx`**&#x20;file.**
+
+**Open crontab:**
+
+```
+crontab -e
+```
+
+Add this line:
+
+```
+18 14 * * * /usr/bin/vmrun -T ws snapshot "/path/to/Windows 10 x64.vmx" "Daily-Backup"
+```
+
+Replace the executable and VMX paths with your actual paths.
+
+Save using:
+
+- `Ctrl + O`
+- Enter
+- `Ctrl + X`
+
+**Verify:**
+
+```
+crontab -l
+```
+
+To test the command manually before scheduling:
+
+```
+/usr/bin/vmrun -T ws snapshot "/path/to/Windows 10 x64.vmx" "Daily-Backup"
+```
+
+The command creates a snapshot named `Daily-Backup`.
+
+Note: Full Snapshot Manager functionality is available in compatible VMware Workstation Pro versions. Player editions may have limited snapshot functionality. The VMX path and vmrun executable must be correct.
+
+# **PART C – Create Spanned, Striped and Mirrored Volumes**
+
+**Aim:** To create spanned, striped and mirrored volumes using Windows Disk Management.
+
+### **Step 1: Add additional virtual disks**
+
+1. Shut down Windows VM.
+2. Open VMware → VM Settings.
+3. Click Add → Hard Disk.
+4. Select the disk type and Create a new virtual disk.
+5. Create three additional disks, each approximately 20 GB.
+6. Click Finish.
+7. Start Windows VM.
+
+### **Step 2: Initialize disks**
+
+Open Disk Management:
+
+```
+diskmgmt.msc
+```
+
+1. Initialize the three additional disks.
+2. Select GPT or MBR.
+3. Right-click each additional disk.
+4. Select Convert to Dynamic Disk.
+5. Select the additional disks and confirm.
+
+Do not convert the Windows system disk.
+
+Traditional spanned, striped and mirrored volumes require Dynamic Disk support. Use a supported Windows edition, such as Windows 10 Pro.
+
+### **A. Creating a Spanned Volume**
+
+1. In Disk Management, right-click unallocated space on Disk 0.
+2. Select New Spanned Volume.
+3. Click Next.
+4. Select Disk 0 and click Add.
+5. Select Disk 1 and click Add.
+6. Set volume size to approximately 40700 MB.
+7. Click Next.
+8. Assign drive letter `E:`.
+9. Select:
+
+```
+File System: NTFS
+Volume Label: SpannedVolume
+Quick Format: Enabled
+```
+
+10. Click Next → Finish.
+11. Confirm conversion if prompted.
+
+**Verify:**
+
+```
+diskmgmt.msc
+```
+
+Check that SpannedVolume (E:) appears as Healthy.
+
+### **B. Creating a Striped Volume**
+
+First, delete the previous SpannedVolume.
+
+1. Right-click SpannedVolume (E:).
+2. Select Delete Volume.
+3. Confirm.
+
+Deleting the volume erases its data.
+
+Now:
+
+1. Right-click unallocated space on Disk 0.
+2. Select New Striped Volume.
+3. Click Next.
+4. Select Disk 0 → Add.
+5. Select Disk 1 → Add.
+6. Set size to approximately 40700 MB.
+7. Click Next.
+8. Assign drive letter `E:`.
+9. Select:
+
+```
+File System: NTFS
+Volume Label: StripedVolume
+Quick Format: Enabled
+```
+
+10. Click Next → Finish.
+11. Confirm conversion if prompted.
+
+**Verify:**
+
+```
+diskmgmt.msc
+```
+
+Check that StripedVolume (E:) appears as Healthy across both disks.
+
+### **C. Creating a Mirrored Volume**
+
+First, delete the existing StripedVolume.
+
+1. Right-click StripedVolume (E:).
+2. Select Delete Volume.
+3. Confirm.
+
+Now:
+
+1. Right-click unallocated space on Disk 0.
+2. Select New Mirrored Volume.
+3. Click Next.
+4. Select Disk 1 and click Add.
+5. Set volume size to approximately 20350 MB.
+6. Click Next.
+7. Assign drive letter `E:`.
+8. Select:
+
+```
+File System: NTFS
+Volume Label: Mirrored
+Quick Format: Enabled
+```
+
+9. Click Next → Finish.
+10. Confirm conversion if prompted.
+
+**Verify:**
+
+```
+diskmgmt.msc
+```
+
+Check that Mirrored (E:) appears as Healthy across Disk 0 and Disk 1.
+
+# **PART D – Create, Manage and Configure RAID 5 Using Storage Spaces**
+
+**Aim:** To create a RAID 5-like storage space using Parity in Windows Storage Spaces.
+
+### **Step 1: Prepare additional disks**
+
+1. Shut down Windows VM.
+2. Open VMware → VM Settings.
+3. Add three new virtual hard disks, approximately 20 GB each.
+4. Click Finish.
+5. Start Windows VM.
+
+Use three empty disks that are not currently part of the Dynamic Volumes created in Part C.
+
+### **Step 2: Open Storage Spaces**
+
+1. Open Control Panel.
+2. Select System and Security.
+3. Open Storage Spaces.
+
+Alternatively, search for:
+
+```
+Manage Storage Spaces
+```
+
+### **Step 3: Create a Storage Pool**
+
+1. Click Create a new pool and storage space.
+2. Select the three additional disks.
+3. Click Create pool.
+
+Windows combines the disks into a storage pool.
+
+### **Step 4: Create RAID 5 storage**
+
+Enter the following settings:
+
+```
+Name: RAID5
+Drive Letter: E:
+File System: NTFS
+Resiliency Type: Parity
+```
+
+Choose an appropriate available capacity.
+
+Click:
+
+```
+Create storage space
+```
+
+Wait for Windows to complete the operation.
+
+### **Step 5: Verify RAID 5**
+
+Open Manage Storage Spaces.
+
+Check:
+
+```
+Storage Pool: Created
+RAID5 (E:)
+Resiliency: Parity
+Status: OK
+```
+
+Now open Disk Management:
+
+```
+diskmgmt.msc
+```
+
+Verify that RAID5 (E:) appears as a Healthy NTFS volume.
+
+
+
+Expected result
+
+&#x20;RAID5 storage space successfully created using Parity resiliency.
+
+
+
+**Important:** Windows Storage Spaces Parity provides RAID-5-like protection. It is software-based parity, not a hardware RAID 5 configuration.
+
+# **Quick Command Reference**
+
+These are the commands you need during the experiment.
+
+| Purpose              | Command                                        |
+| -------------------- | ---------------------------------------------- |
+| Open Disk Management | `diskmgmt.msc`                                 |
+| Open Ubuntu Terminal | `Ctrl + Alt + T`                               |
+| Locate vmrun         | `which vmrun`                                  |
+| Find vmrun           | `find /usr -name vmrun 2>/dev/null`            |
+| Open crontab         | `crontab -e`                                   |
+| Verify cron jobs     | `crontab -l`                                   |
+| Create snapshot      | `vmrun -T ws snapshot "VM.vmx" "Daily-Backup"` |
+| Open Storage Spaces  | Search `Manage Storage Spaces`                 |
+
+## **Final checklist – Screenshots to capture**
+
+| Part | Screenshot                       |
+| ---- | -------------------------------- |
+| A    | Initial 60 GB disk               |
+| A    | C: partition after shrinking     |
+| A    | Student (G:) volume              |
+| A    | VMware disk expanded to 80 GB    |
+| A    | Final 40 GB Student volume       |
+| B    | VM hardware settings             |
+| B    | Snapshot options                 |
+| B    | Snapshot Manager                 |
+| B    | Created snapshot                 |
+| B    | Crontab scheduled command        |
+| C    | Initial disks in Disk Management |
+| C    | Spanned Volume                   |
+| C    | Striped Volume                   |
+| C    | Mirrored Volume                  |
+| D    | Storage pool creation            |
+| D    | RAID5 Parity configuration       |
+| D    | Final RAID5 volume               |
+
+## **Important things to remember**
+
+1. **Part A:** VMware expands the virtual disk; Windows Disk Management manages partitions.
+2. **Part B:** VMware snapshots save VM states; `vmrun` and Crontab automate snapshot creation.
+3. **Part C:** Dynamic disks are used for traditional spanned, striped and mirrored volumes.
+4. **Part D:** Storage Spaces uses Parity to provide RAID-5-like protection.
+5. Delete the previous volume before reusing the same disks for another volume type.
+6. Keep separate empty disks for Part D.
+
+**Recommended execution order:** A → B → C → D.
+
+This covers all four parts of Experiment No. 2 with the commands and practical steps needed for execution.
