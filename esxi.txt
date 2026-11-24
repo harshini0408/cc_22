@@ -1,0 +1,268 @@
+# **Experiment No. 4 – Create Type 2 Virtualization on ESXi 6.5 Server**
+
+Platform: VMware Workstation 17 + VMware ESXi 6.5 + Ubuntu ISO
+
+**Aim:** To create a Type 2 virtualization environment by installing VMware ESXi as a nested hypervisor inside VMware Workstation and creating a virtual machine on the ESXi server.
+
+## **Step 1: Create ESXi Virtual Machine**
+
+1. Open VMware Workstation.
+2. Click **Create a New Virtual Machine**.
+3. Select Installer ISO image.
+4. Browse and select the VMware ESXi 6.5 ISO.
+5. Enter VM name:
+
+```
+VMware ESXi
+```
+
+6\. Select the location to save the VM.
+
+## **Step 2: Configure Processor**
+
+Set:
+
+```
+Number of processors: 2
+Cores per processor: 1
+Total cores: 2
+```
+
+Click Next.
+
+## **Step 3: Allocate RAM**
+
+Set:
+
+```
+Memory: 8192 MB (8 GB)
+```
+
+Click Next.
+
+## **Step 4: Configure Network**
+
+Select:
+
+```
+Network Type: NAT
+```
+
+Click Next.
+
+## **Step 5: Configure I/O Controller**
+
+Select:
+
+```
+Paravirtualized SCSI
+```
+
+Click Next.
+
+## **Step 6: Select Virtual Disk Type**
+
+Select:
+
+```
+SCSI
+```
+
+Click Next.
+
+## **Step 7: Specify Disk Capacity**
+
+Enter:
+
+```
+Maximum Disk Size: 142 GB
+```
+
+Select:
+
+```
+Split virtual disk into multiple files
+```
+
+Click Next.
+
+## **Step 8: Specify Disk File**
+
+Enter the virtual disk filename:
+
+```
+VMware ESXi 6.vmdk
+```
+
+Click Next.
+
+## **Step 9: Finish VM Creation**
+
+1. Review the VM configuration.
+2. Click Finish.
+3. Power on the ESXi VM.
+
+## **Step 10: Install VMware ESXi**
+
+When the ESXi installer appears:
+
+1. Press `Enter` to continue.
+2. Wait for the installer to scan available storage devices.
+3. Select the installation disk.
+4. Select keyboard layout:
+
+```
+US Default
+```
+
+5. Press Enter.
+6. Enter a root password.
+7. Confirm the password.
+8. Press F11 to accept the license agreement and install ESXi.
+9. Wait for installation to complete.
+10. Reboot the VM when prompted.
+
+## **Step 11: Obtain ESXi IP Address**
+
+After reboot, the ESXi Direct Console User Interface (DCUI) appears.
+
+Note the IP address displayed on the screen.
+
+For example:
+
+```
+192.168.XXX.XXX
+```
+
+Use your actual displayed IP address.
+
+## **Step 12: Open ESXi Host Client**
+
+1. Open a browser on the host computer.
+2. Enter:
+
+```
+https://ESXI-IP-ADDRESS
+```
+
+3. Accept the certificate warning if prompted.
+4. Log in using:
+
+```
+Username: root
+Password: Your ESXi root password
+```
+
+5\. Acknowledge the Customer Experience Improvement Program dialog if it appears.
+
+The ESXi dashboard will open.
+
+## **Step 13: Create a New Virtual Machine on ESXi**
+
+1. Click **Create/Register VM**.
+2. Select:
+
+```
+Create a new virtual machine
+```
+
+3\. Click Next.
+
+Enter:
+
+```
+Name: Ubuntu-Lab
+Guest OS Family: Linux
+Guest OS Version: Ubuntu Linux (64-bit)
+```
+
+4\. Click Next.
+
+## **Step 14: Select Datastore**
+
+1. Select the available datastore.
+2. Click Next.
+
+## **Step 15: Configure Virtual Machine Hardware**
+
+Configure:
+
+```
+CPU: 2
+Memory: 2048 MB
+Hard Disk: 25 GB
+Network Adapter: VM Network
+```
+
+Adjust according to the available datastore capacity.
+
+Click Next.
+
+## **Step 16: Upload Ubuntu ISO**
+
+1. Open Datastore Browser.
+2. Click Upload.
+3. Select your Ubuntu ISO from the host computer.
+4. Wait for the upload to complete.
+
+For example:
+
+```
+ubuntu-18.04.6-desktop-amd64.iso
+```
+
+## **Step 17: Attach Ubuntu ISO**
+
+1. Open the Ubuntu-Lab VM.
+2. Select Edit Settings.
+3. Expand CD/DVD Drive.
+4. Select Datastore ISO File.
+5. Browse and select the uploaded Ubuntu ISO.
+6. Enable Connected.
+7. Enable Connect at power on.
+8. Click Save.
+
+## **Step 18: Power On Virtual Machine**
+
+1. Select Ubuntu-Lab.
+2. Click Power on.
+3. Open the VM Console.
+4. The boot manager appears.
+5. Select the Ubuntu installation option.
+
+## **Step 19: Verify Installation**
+
+The Ubuntu installer should appear inside the ESXi virtual machine.
+
+This confirms that:
+
+- VMware Workstation is running ESXi.
+- ESXi is functioning as a hypervisor.
+- ESXi has successfully created and started another virtual machine.
+
+## **All Important Configurations – Quick Reference**
+
+| Component          | Configuration         |
+| ------------------ | --------------------- |
+| Host hypervisor    | VMware Workstation 17 |
+| Nested hypervisor  | VMware ESXi 6.5       |
+| ESXi VM processors | 2                     |
+| ESXi VM RAM        | 8192 MB               |
+| Network            | NAT                   |
+| I/O Controller     | Paravirtualized SCSI  |
+| Disk type          | SCSI                  |
+| Disk capacity      | 142 GB                |
+| Guest VM name      | Ubuntu-Lab            |
+| Guest OS           | Ubuntu Linux 64-bit   |
+| Guest RAM          | 2048 MB               |
+| Guest disk         | 25 GB                 |
+
+## **Result**
+
+Type 2 virtualization was successfully demonstrated by installing VMware ESXi as a virtual machine in VMware Workstation and creating and running an Ubuntu virtual machine on the ESXi server.
+
+**Important:** Your lab manual uses VMware Workstation 17 and ESXi 6.5. To run ESXi inside VMware, enable nested virtualization (Intel VT-x/EPT or AMD-V/RVI) in the ESXi VM's processor settings. ESXi 6.5 is an older release, so compatibility with modern processors and VMware versions may vary.
+
+Based on your uploaded Experiment 4 PDF, pages 1–10. The CPU, RAM, disk, network and guest VM configurations follow the lab manual.&#x20;
+
+ex4.pdf
